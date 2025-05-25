@@ -10,6 +10,10 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
+    permissions:
+      contents: read
+      packages: write
+
     steps:
     - name: Checkout repo
       uses: actions/checkout@v4
@@ -53,7 +57,8 @@ jobs:
         cache-from: type=gha
         cache-to: type=gha,mode=max
         no-cache: true
-        
+        secrets: |
+          github_token=${{ secrets.GIT_CLONE_TOKEN }}
 
     - name: Scan image with Trivy
       uses: aquasecurity/trivy-action@master
@@ -64,4 +69,3 @@ jobs:
         severity: CRITICAL,HIGH
         ignore-unfixed: true
         vuln-type: os,library
-        skip-policy: true
