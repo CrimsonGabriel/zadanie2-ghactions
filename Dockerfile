@@ -1,77 +1,59 @@
-# Użyj rozszerzonego frontendu buildkit
 # syntax=docker/dockerfile:1.4
 
 # Etap 1: Budowanie zależności (Build Stage)
-# Użyj obrazu Python do zainstalowania zależności, aby warstwa była cache'owana
 FROM python:3.10-slim as builder
 
-# Ustaw katalog roboczy
 WORKDIR /app_builder
 
-# Upewnij się, że git i ssh są dostępne
-RUN apt-get update && apt-get install -y --no-install-recommends git openssh-client && rm -rf /var/lib/apt/lists/*
+# Git + curl (dla ewentualnych skryptów) + SSH jeśli potrzeba
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    git openssh-client curl && \
+    rm -rf /var/lib/apt/lists/*
 
-# Przekazanie tokena jako ARG (bezpiecznie przez BuildKit secret)
+# Bezpieczne klonowanie repozytorium (przez token)
 RUN --mount=type=secret,id=github_token \
     git clone https://$(cat /run/secrets/github_token)@github.com/CrimsonGabriel/zadanie_1.git /app_src
 
-
 WORKDIR /app_src
-COPY requirements.txt . 
-# Skopiuj requirements.txt z pobranego kodu (jeśli jest w repo)
 
-# Zainstaluj zależności (bez zapisywania cache pip i bez plików .pyc)
-# Użyj virtualenv dla lepszej izolacji
+COPY requirements.txt .  # jeśli nadpisujesz requirements
+
+# Instalacja virtualenv + pakietów z fixami pod Trivy
 RUN python -m venv /opt/venv && \
     /opt/venv/bin/pip install --no-cache-dir --upgrade pip==25.1.1 setuptools==78.1.1 && \
     /opt/venv/bin/pip install --no-cache-dir -r requirements.txt
 
 
-# ---
-# Etap 2: Obraz wynikowy (Runtime Stage)
-# Użyj minimalnego obrazu Python
+# Etap 2: Runtime Stage
 FROM python:3.10-slim
 
-# Metadane OCI - Informacje o autorze
 LABEL org.opencontainers.image.authors="Gabriel Piątek <gabriel.piatek.biznes@gmail.com>"
 
-# Ustaw zmienne środowiskowe
-ENV PYTHONDONTWRITEBYTECODE 1 
-# Nie twórz plików .pyc
-ENV PYTHONUNBUFFERED 1        
-# Logi od razu na stdout/stderr
-ENV FLASK_APP=app.py         
-# Wskazanie aplikacji Flask (choć uruchamiamy bezpośrednio)
-ENV PORT=8080               
-# Domyślny port w kontenerze
-ENV WEATHER_API_KEY=""     
-# Pusta wartość - zostanie przekazana przy `docker run`
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    FLASK_APP=app.py \
+    PORT=8080 \
+    WEATHER_API_KEY=""
 
-# Ustaw katalog roboczy
 WORKDIR /app
 
-# Skopiuj wirtualne środowisko z zależnościami z etapu budowania
+# Usuń zlib1g — Trivy CRITICAL (will_not_fix)
+RUN apt-get purge -y zlib1g && rm -rf /var/lib/apt/lists/*
+
+# Skopiuj środowisko virtualenv
 COPY --from=builder /opt/venv /opt/venv
 
-# Skopiuj kod aplikacji pobrany w etapie builder
+# Skopiuj źródła aplikacji
 COPY --from=builder /app_src /app
-# Uwaga: Plik .env NIE jest kopiowany (i dobrze!), klucz API podano przez zmienną środowiskową przy uruchamianiu
 
-# Uruchom aplikację jako użytkownik nie-root dla bezpieczeństwa
+# Użytkownik nie-root
 RUN useradd --create-home appuser && \
     chown -R appuser:appuser /app /opt/venv
 USER appuser
 
-# Wystaw port, na którym nasłuchuje aplikacja w kontenerze
 EXPOSE ${PORT}
 
-# Sprawdzenie stanu kontenera (Healthcheck)
-# Sprawdza co 30s, timeout 5s, 3 próby zanim oznaczy jako niezdrowy
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
   CMD curl -f http://localhost:${PORT}/health || exit 1
-# Uwaga: curl musi być dostępny w obrazie bazowym (python:slim go zawiera)
 
-# Komenda uruchamiająca aplikację przy starcie kontenera
-# Użyto venv/bin/python do uruchomienia, aby użyć zainstalowanych pakietów
 CMD ["/opt/venv/bin/python", "app.py"]
-
