@@ -37,7 +37,7 @@ jobs:
       id: meta
       uses: docker/metadata-action@v5
       with:
-        images: ghcr.io/gabrielcrimson/zadanie1-app
+        images: ghcr.io/crimsongabriel/zadanie1-app
         tags: |
           type=semver,pattern=v*
           type=sha
@@ -57,7 +57,7 @@ jobs:
     - name: Scan image with Trivy
       uses: aquasecurity/trivy-action@master
       with:
-        image-ref: ghcr.io/gabrielcrimson/zadanie1-app:latest
+        image-ref: ghcr.io/crimsongabriel/zadanie1-app:latest
         format: table
         exit-code: 1
         severity: CRITICAL,HIGH
