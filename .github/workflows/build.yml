@@ -41,6 +41,11 @@ jobs:
         tags: |
           type=semver,pattern=v*
           type=sha
+          
+    - name: Create fresh builder
+      run: |
+        docker buildx create --use --name cleanbuilder --driver docker-container
+        docker buildx inspect --bootstrap
 
     - name: Build and push
       uses: docker/build-push-action@v5
