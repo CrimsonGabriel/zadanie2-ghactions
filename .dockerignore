@@ -1,0 +1,12 @@
+.git
+.gitignore
+.env
+*.pyc
+__pycache__/
+venv/
+.dockerignore
+Dockerfile
+README.md
+zadanie1.md
+zadanie1_dod.md
+

@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <title>Pogoda</title>
+    <style>
+        body { font-family: sans-serif; margin: 20px; }
+        .weather-info { margin-top: 20px; padding: 15px; border: 1px solid #ccc; border-radius: 5px; }
+        .error { color: red; font-weight: bold; }
+        label, select, button { display: block; margin-bottom: 10px; }
+    </style>
+</head>
+<body>
+    <h1>Sprawdź pogodę</h1>
+
+    <form method="POST">
+        <label for="country">Wybierz kraj:</label>
+        <select name="country" id="country" required>
+            <option value="">-- Wybierz kraj --</option>
+            {% for country in locations %}
+                <option value="{{ country }}" {% if country == selected_country %}selected{% endif %}>{{ country }}</option>
+            {% endfor %}
+        </select>
+
+        <label for="city">Wybierz miasto:</label>
+        <select name="city" id="city" required>
+             <option value="">-- Wybierz miasto --</option>
+             {% if selected_country and selected_country in locations %}
+                 {% for city_option in locations[selected_country] %}
+                     <option value="{{ city_option }}" {% if city_option == selected_city %}selected{% endif %}>{{ city_option }}</option>
+                 {% endfor %}
+             {% endif %}
+        </select>
+
+        <button type="submit">Pokaż pogodę</button>
+    </form>
+
+    {% if error %}
+        <p class="error">{{ error }}</p>
+    {% endif %}
+
+    {% if weather %}
+        <div class="weather-info">
+            <h2>Pogoda dla: {{ weather.city }}, {{ weather.country }}</h2>
+            <p>Temperatura: {{ weather.temp }} °C</p>
+            <p>Warunki: {{ weather.description }} <img src="http://openweathermap.org/img/wn/{{ weather.icon }}.png" alt="Ikona pogody"></p>
+            <p>Wilgotność: {{ weather.humidity }}%</p>
+            <p>Ciśnienie: {{ weather.pressure }} hPa</p>
+        </div>
+    {% endif %}
+
+    {# Prosty JS do aktualizacji listy miast po wybraniu kraju #}
+    <script>
+        const countrySelect = document.getElementById('country');
+        const citySelect = document.getElementById('city');
+        const locations = {{ locations | tojson }}; // Przekaż dane z Flaska do JS
+        const selectedCity = '{{ selected_city or "" }}'; // Zapamiętaj wybrane miasto
+
+        countrySelect.addEventListener('change', function() {
+            const selectedCountry = this.value;
+            // Wyczyść obecne opcje miast
+            citySelect.innerHTML = '<option value="">-- Wybierz miasto --</option>';
+
+            if (selectedCountry && locations[selectedCountry]) {
+                locations[selectedCountry].forEach(city => {
+                    const option = document.createElement('option');
+                    option.value = city;
+                    option.textContent = city;
+                    // Zaznacz miasto, jeśli było wcześniej wybrane dla tego kraju
+                    if (city === selectedCity && selectedCountry === '{{ selected_country or "" }}') {
+                       option.selected = true;
+                    }
+                    citySelect.appendChild(option);
+                });
+            }
+        });
+         // Wywołaj zmianę przy ładowaniu strony, aby wypełnić miasta jeśli kraj jest już wybrany
+         if (countrySelect.value) {
+             countrySelect.dispatchEvent(new Event('change'));
+         }
+    </script>
+</body>
+</html>
