@@ -20,6 +20,7 @@ Opracować łańcuch (pipeline) w GitHub Actions, który:
 ### 📂 Struktura workflow
 
 Plik: `.github/workflows/build.yml`
+
 ![image](https://github.com/user-attachments/assets/ed579b32-1055-42d1-86da-610c5935dc07)
 ![image](https://github.com/user-attachments/assets/da62f0eb-fe42-4479-a3c9-a521e31b9baf)
 
