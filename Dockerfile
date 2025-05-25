@@ -1,5 +1,6 @@
 # syntax=docker/dockerfile:1.4
 
+### ===== Etap 1: Budowanie (builder stage) =====
 FROM python:3.10-slim as builder
 
 WORKDIR /app_builder
@@ -10,7 +11,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     rm -rf /var/lib/apt/lists/*
 
 # 💀 USUŃ PODATNE SYSTEMOWE setuptools i pip
-RUN pip uninstall -y setuptools pip
+RUN python3 -m pip uninstall -y pip setuptools || true
 
 # Klon repo (prywatnie z tokenem)
 RUN --mount=type=secret,id=github_token \
@@ -18,12 +19,12 @@ RUN --mount=type=secret,id=github_token \
 
 WORKDIR /app_src
 
-# Virtualenv + FIXED wersje
+# Virtualenv + FIXED wersje (Trivy-safe)
 RUN python -m venv /opt/venv && \
     /opt/venv/bin/pip install --no-cache-dir --upgrade pip==25.1.1 setuptools==78.1.1 && \
     /opt/venv/bin/pip install --no-cache-dir -r requirements.txt
 
-# Runtime
+### ===== Etap 2: Runtime (docelowy kontener) =====
 FROM python:3.10-slim
 
 LABEL org.opencontainers.image.authors="Gabriel Piątek <gabriel.piatek.biznes@gmail.com>"
@@ -36,9 +37,13 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 
 WORKDIR /app
 
+# Kopiuj venv z zależnościami
 COPY --from=builder /opt/venv /opt/venv
+
+# Kopiuj źródła aplikacji
 COPY --from=builder /app_src /app
 
+# Użytkownik nie-root
 RUN useradd --create-home appuser && \
     chown -R appuser:appuser /app /opt/venv
 USER appuser
