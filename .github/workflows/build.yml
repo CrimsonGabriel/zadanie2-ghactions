@@ -27,17 +27,18 @@ jobs:
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v3
 
-    - name: Build image and export to tar
+    - name: Build image and export to tar (OCI)
       uses: docker/build-push-action@v5
       with:
         context: .
         platforms: linux/amd64
-        outputs: type=docker,dest=/tmp/image.tar
+        outputs: type=oci,dest=/tmp/image.tar
 
-    - name: Load image from tar
+    - name: Load OCI image and tag
       run: |
-        docker load -i /tmp/image.tar
-        docker tag $(docker images --format "{{.Repository}}:{{.Tag}}" | head -n1) ghcr.io/crimsongabriel/zadanie1-app:latest
+        mkdir image && tar -xf /tmp/image.tar -C image
+        IMAGE_ID=$(jq -r .config.image image/index.json)
+        docker import image/blobs/sha256/$IMAGE_ID ghcr.io/crimsongabriel/zadanie1-app:latest
 
     - name: Push to GHCR manually
       run: docker push ghcr.io/crimsongabriel/zadanie1-app:latest
