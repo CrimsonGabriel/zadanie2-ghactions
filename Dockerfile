@@ -23,8 +23,9 @@ COPY requirements.txt .
 # Zainstaluj zależności (bez zapisywania cache pip i bez plików .pyc)
 # Użyj virtualenv dla lepszej izolacji
 RUN python -m venv /opt/venv && \
-    /opt/venv/bin/pip install --no-cache-dir --upgrade pip==25.1.1 setuptools==78.1.1
+    /opt/venv/bin/pip install --no-cache-dir --upgrade pip==25.1.1 setuptools==78.1.1 && \
     /opt/venv/bin/pip install --no-cache-dir -r requirements.txt
+
 
 # ---
 # Etap 2: Obraz wynikowy (Runtime Stage)
