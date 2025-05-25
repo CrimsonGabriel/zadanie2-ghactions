@@ -10,22 +10,25 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     git openssh-client curl && \
     rm -rf /var/lib/apt/lists/*
 
-# 💀 USUŃ PODATNE SYSTEMOWE setuptools i pip
+# USUŃ SYSTEMOWE pip/setuptools (nie chcemy starych syfów)
 RUN python3 -m pip uninstall -y pip setuptools || true
 
-# Klon repo (prywatnie z tokenem)
+# Klon repo
 RUN --mount=type=secret,id=github_token \
     git clone https://$(cat /run/secrets/github_token)@github.com/CrimsonGabriel/zadanie_1.git /app_src
 
 WORKDIR /app_src
 
-# Virtualenv + FIXED wersje (Trivy-safe)
+# Virtualenv + bezpieczne wersje
 RUN python -m venv /opt/venv && \
     /opt/venv/bin/pip install --no-cache-dir --upgrade pip==25.1.1 setuptools==78.1.1 && \
     /opt/venv/bin/pip install --no-cache-dir -r requirements.txt
 
-### ===== Etap 2: Runtime (docelowy kontener) =====
+### ===== Etap 2: Runtime =====
 FROM python:3.10-slim
+
+# 💀 USUŃ stare setuptools/pip z runtime'a (tu był problem)
+RUN python3 -m pip uninstall -y pip setuptools || true && rm -rf /usr/local/lib/python3.10/site-packages/setuptools*
 
 LABEL org.opencontainers.image.authors="Gabriel Piątek <gabriel.piatek.biznes@gmail.com>"
 
@@ -37,10 +40,8 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 
 WORKDIR /app
 
-# Kopiuj venv z zależnościami
+# Kopiuj tylko to co potrzeba
 COPY --from=builder /opt/venv /opt/venv
-
-# Kopiuj źródła aplikacji
 COPY --from=builder /app_src /app
 
 # Użytkownik nie-root
