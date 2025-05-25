@@ -1,4 +1,4 @@
-# 🐳 zadanie2 na bazie zadanie1_app – CI/CD Pipeline z GitHub Actions
+# 🐳 Zadanie 2 na bazie zadanie1_app – CI/CD Pipeline z GitHub Actions
 
 
 ---
