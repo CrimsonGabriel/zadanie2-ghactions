@@ -49,6 +49,7 @@ jobs:
         platforms: linux/amd64,linux/arm64
         push: true
         tags: ${{ steps.meta.outputs.tags }}
+        no-cache: true
         cache-from: type=gha
         cache-to: type=gha,mode=max
         secrets: |
