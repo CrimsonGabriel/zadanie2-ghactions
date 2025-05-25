@@ -42,7 +42,7 @@ jobs:
           type=semver,pattern=v*
           type=sha
 
-        - name: Build and push
+    - name: Build and push
       uses: docker/build-push-action@v5
       with:
         context: .
@@ -53,7 +53,6 @@ jobs:
         cache-to: type=registry,ref=crimsongabriel/zadanie1-app:buildcache,mode=max
         secrets: |
           github_token=${{ secrets.GIT_CLONE_TOKEN }}
-
 
     - name: Scan image with Trivy
       uses: aquasecurity/trivy-action@master
