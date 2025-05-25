@@ -1,0 +1,9 @@
+ignoreRules:
+  - vulnerabilityID: CVE-2025-4802
+    reason: glibc – brak patcha upstream, false positive
+  - vulnerabilityID: CVE-2023-31484
+    reason: perl-base – brak fixu upstream, nie dotyczy użycia
+  - vulnerabilityID: CVE-2023-45853
+    reason: zlib1g – oznaczone jako "will_not_fix" i ignorowane przez Debian
+
+

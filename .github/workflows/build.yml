@@ -62,4 +62,6 @@ jobs:
         format: table
         exit-code: 1
         severity: CRITICAL,HIGH
-        scanners: vuln
+        ignore-unfixed: true
+        vuln-type: os,library
+        ignore-policy: .github/.trivyignore.yaml
