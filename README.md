@@ -68,19 +68,37 @@ Pozwala łatwo wymusić przerwanie pipeline'u w razie wykrycia luk o statusie HI
     severity: CRITICAL,HIGH
     ignore-unfixed: true
 ## 🏷️ Tagowanie obrazów i cache
-Obrazy:
-Użyto docker/metadata-action, który automatycznie taguje obrazy jako:
+# 📦 Obrazy
+Do tagowania obrazów wykorzystano docker/metadata-action, który automatycznie generuje zestaw znaczników na podstawie commitów i tagów:
 
-latest – główny tag,
+latest – domyślny i czytelny tag reprezentujący najnowszą wersję aplikacji,
 
-sha-<skrót> – skrót commita (GITHUB_SHA),
+sha-<skrót> – jednoznaczne powiązanie obrazu z danym commitem (GITHUB_SHA), co pozwala na pełną identyfikowalność buildów,
 
-vX.Y.Z – jeśli commit zawiera wersjonowany tag w formacie semver.
+vX.Y.Z – jeśli commit jest opatrzony semver-tag'iem (v1.2.3), generowany jest również wersjonowany tag, zgodny z dobrymi praktykami wersjonowania semantycznego (semver.org).
 
-Cache:
-BuildKit zapisuje cache w systemie GitHub Actions (type=gha) – dzięki temu kolejne buildy są szybsze i bardziej efektywne:
+Dzięki takiemu podejściu możliwe jest zarówno śledzenie zmian, jak i stabilna referencja do wersji w środowiskach produkcyjnych.
+
+# 🧱 Cache budowania
+BuildKit wykorzystuje type=gha (GitHub Actions cache) do przechowywania danych cache:
+
+
 cache-from: type=gha
 cache-to: type=gha,mode=max
+cache-from: pozwala wykorzystać wcześniej zapisany cache przy kolejnym buildzie,
+
+cache-to: zapisuje najnowszy cache w trybie max (pełne dane warstw z wielu platform).
+
+Użycie tego rozwiązania:
+
+przyspiesza kolejne buildy (oszczędność czasu i zasobów),
+
+nie wymaga zewnętrznego storage’u,
+
+jest natywnie wspierane w GitHub Actions bez dodatkowej konfiguracji.
+
+📌 Dodatkowo: Cache działa na poziomie registry w połączeniu z buildx i obsługuje multi-arch builds, co jest kluczowe przy wsparciu linux/amd64 i linux/arm64.
+
 ✅ Przykład działania
 Ostatnie zakończone poprawnie uruchomienie workflow:
 
