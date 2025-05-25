@@ -1,6 +1,5 @@
-# 🐳 zadanie1-app – CI/CD Pipeline z GitHub Actions
+# 🐳 zadanie2 na bazie zadanie1_app – CI/CD Pipeline z GitHub Actions
 
-Pipeline automatyzuje budowę i publikację obrazu Dockera dla aplikacji opracowanej jako rozwiązanie **Zadania nr 1**. W pełni spełnia wszystkie wymagania projektowe, w tym wsparcie dla wielu architektur, cache rejestrowy oraz skan bezpieczeństwa obrazu.
 
 ---
 
