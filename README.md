@@ -88,6 +88,10 @@ Obraz opublikowany do:
 ghcr.io/crimsongabriel/zadanie1-app:latest
 
 Przeszedł skan Trivy z wynikiem: 0 podatności HIGH/CRITICAL
+![image](https://github.com/user-attachments/assets/f690880c-16d5-4d95-821a-69bb05c4ca4b)
+![image](https://github.com/user-attachments/assets/76ef2ef4-9577-4da9-af28-9c99ecf471d6)
+![image](https://github.com/user-attachments/assets/9b56e319-2a02-42cd-9f52-4957a1352839)
+
 ![WORK](https://github.com/user-attachments/assets/264737d5-4032-4351-b741-cdfaedce69c2)
 
 
