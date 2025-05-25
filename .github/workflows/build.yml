@@ -49,10 +49,11 @@ jobs:
         platforms: linux/amd64,linux/arm64
         push: true
         tags: ${{ steps.meta.outputs.tags }}
-        cache-from: type=registry,ref=crimsongabriel/zadanie1-app:buildcache
-        cache-to: type=registry,ref=crimsongabriel/zadanie1-app:buildcache,mode=max
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
         secrets: |
           github_token=${{ secrets.GIT_CLONE_TOKEN }}
+
 
     - name: Scan image with Trivy
       uses: aquasecurity/trivy-action@master
