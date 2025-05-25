@@ -11,11 +11,10 @@ WORKDIR /app_builder
 # Upewnij się, że git i ssh są dostępne
 RUN apt-get update && apt-get install -y --no-install-recommends git openssh-client && rm -rf /var/lib/apt/lists/*
 
-# Pobierz kod z publicznego repozytorium GitHub używając mount=ssh
-# Założono, że SSH agent forwarding jest skonfigurowany na hoście
-RUN --mount=type=ssh \
-    mkdir -p -m 0700 ~/.ssh && ssh-keyscan github.com >> ~/.ssh/known_hosts && \
-    git clone git@github.com:CrimsonGabriel/zadanie_1.git /app_src
+# Przekazanie tokena jako ARG (bezpiecznie przez BuildKit secret)
+RUN --mount=type=secret,id=github_token \
+    git clone https://$(cat /run/secrets/github_token)@github.com/CrimsonGabriel/zadanie_1.git /app_src
+
 
 WORKDIR /app_src
 COPY requirements.txt . 
