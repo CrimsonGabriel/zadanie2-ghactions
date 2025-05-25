@@ -64,4 +64,4 @@ jobs:
         severity: CRITICAL,HIGH
         ignore-unfixed: true
         vuln-type: os,library
-        ignore-policy: .github/.trivyignore.yaml
+        skip-policy: true
